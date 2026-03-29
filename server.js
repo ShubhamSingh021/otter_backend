@@ -11,14 +11,29 @@ const registrationRoutes = require('./routes/registrationRoutes');
 const galleryRoutes = require('./routes/galleryRoutes');
 const contentRoutes = require('./routes/contentRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
 // MIDDLEWARE
-app.use(helmet());
-app.use(cors());
+// CORS
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10kb' }));
+
+// HEALTH CHECK
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
 
 // ROUTES
 app.use('/api/v1/auth', authRoutes);
@@ -27,15 +42,13 @@ app.use('/api/v1/registrations', registrationRoutes);
 app.use('/api/v1/gallery', galleryRoutes);
 app.use('/api/v1/content', contentRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // GLOBAL ERROR HANDLER
 app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
-
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
+  res.status(err.statusCode || 500).json({
+    status: "error",
+    message: err.message || "Internal Server Error",
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
   });
 });
