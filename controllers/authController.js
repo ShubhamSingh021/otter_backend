@@ -21,6 +21,7 @@ const sendToken = (user, statusCode, res) => {
 };
 
 exports.signup = async (req, res, next) => {
+  console.log("Signup hit:", req.body);
   try {
     const newUser = await User.create({
       name: req.body.name,

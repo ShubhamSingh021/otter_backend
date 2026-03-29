@@ -17,14 +17,15 @@ const app = express();
 
 // MIDDLEWARE
 // CORS
-const allowedOrigins = [
-  "http://localhost:5173",
-  process.env.FRONTEND_URL
-].filter(Boolean);
-
 app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
+  origin: [
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "https://ottersociety.vercel.app"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(morgan('dev'));

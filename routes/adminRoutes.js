@@ -5,8 +5,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // PROTECT ALL ROUTES
-// router.use(authMiddleware.protect);
-// router.use(authMiddleware.restrictTo('admin'));
+router.use(authMiddleware.protect);
+router.use(authMiddleware.restrictTo('admin'));
 
 router.get('/dashboard', adminController.getDashboardStats);
 router.get('/members', adminController.getAllMembers);
