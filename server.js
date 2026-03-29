@@ -21,7 +21,8 @@ app.use(cors({
   origin: [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
-    "https://ottersociety.vercel.app"
+    "https://ottersociety.vercel.app",
+    "https://otter-frontend-iota.vercel.app"
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

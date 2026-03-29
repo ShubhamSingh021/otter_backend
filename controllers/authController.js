@@ -13,6 +13,16 @@ const sendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
   user.password = undefined;
 
+  // Set secure cookie for cross-site authentication (Render -> Vercel)
+  const cookieOptions = {
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None'
+  };
+
+  res.cookie('token', token, cookieOptions);
+
   res.status(statusCode).json({
     status: 'success',
     token,
@@ -85,7 +95,7 @@ exports.forgotPassword = async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     // 4) Send it to user's email
-    const resetURL = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+    const resetURL = `${process.env.FRONTEND_URL || 'https://otter-frontend-iota.vercel.app/'}/reset-password/${resetToken}`;
 
     // FOR DEVELOPMENT: Log the reset link to terminal
     console.log('--- PASSWORD RESET LINK ---');
@@ -152,7 +162,7 @@ exports.resetPassword = async (req, res, next) => {
     }
 
     if (req.body.password !== req.body.passwordConfirm) {
-        return res.status(400).json({ status: 'fail', message: 'Passwords do not match' });
+      return res.status(400).json({ status: 'fail', message: 'Passwords do not match' });
     }
 
     user.password = req.body.password;
