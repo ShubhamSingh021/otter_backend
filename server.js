@@ -17,16 +17,10 @@ const app = express();
 
 // MIDDLEWARE
 // CORS
+// CORS
 app.use(cors({
-  origin: [
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-    "https://ottersociety.vercel.app",
-    "https://otter-frontend-iota.vercel.app"
-  ],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: process.env.FRONTEND_URL,
+  credentials: true
 }));
 
 app.use(morgan('dev'));

@@ -12,23 +12,23 @@ exports.getAllEvents = async (req, res) => {
           eventId: event._id,
           status: 'Approved',
         });
-        const slotsLeft = event.capacity - approvedCount;
+        const slotsLeft = (event.capacity || 0) - approvedCount;
         
-        // Dynamic Status Label
-        let statusLabel = 'Open';
-        if (slotsLeft <= 0) statusLabel = 'Full';
-        else if (slotsLeft <= 5) statusLabel = 'Few Slots Left';
+        // Handle backward compatibility in mapping fee to price if needed
+        const eventData = event._doc;
+        if (!eventData.price && eventData.fee) {
+          eventData.price = eventData.fee;
+        }
 
         return {
-          ...event._doc,
+          ...eventData,
           slotsLeft: slotsLeft < 0 ? 0 : slotsLeft,
-          statusLabel,
           isFull: slotsLeft <= 0,
         };
       })
     );
 
-    res.status(200).json({ status: 'success', results: events.length, data: { events: eventsWithSlots } });
+    res.status(200).json({ status: 'success', data: { events: eventsWithSlots } });
   } catch (err) {
     res.status(400).json({ status: 'fail', message: err.message });
   }
@@ -37,31 +37,38 @@ exports.getAllEvents = async (req, res) => {
 exports.getEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
+    if (!event) throw new Error('Event not found');
+
     const approvedCount = await Registration.countDocuments({
       eventId: event._id,
       status: 'Approved',
     });
-    const slotsLeft = event.capacity - approvedCount;
+    const slotsLeft = (event.capacity || 0) - approvedCount;
+
+    const eventData = event._doc;
+    if (!eventData.price && eventData.fee) {
+      eventData.price = eventData.fee;
+    }
 
     res.status(200).json({
       status: 'success',
       data: {
         event: {
-          ...event._doc,
+          ...eventData,
           slotsLeft: slotsLeft < 0 ? 0 : slotsLeft,
           isFull: slotsLeft <= 0,
         },
       },
     });
   } catch (err) {
-    res.status(404).json({ status: 'fail', message: 'Event not found' });
+    res.status(404).json({ status: 'fail', message: err.message });
   }
 };
 
 exports.createEvent = async (req, res) => {
   try {
-    const newEvent = await Event.create(req.body);
-    res.status(201).json({ status: 'success', data: { event: newEvent } });
+    const event = await Event.create(req.body);
+    res.status(201).json({ status: 'success', data: { event } });
   } catch (err) {
     res.status(400).json({ status: 'fail', message: err.message });
   }
@@ -70,6 +77,7 @@ exports.createEvent = async (req, res) => {
 exports.updateEvent = async (req, res) => {
   try {
     const event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!event) throw new Error('Event not found');
     res.status(200).json({ status: 'success', data: { event } });
   } catch (err) {
     res.status(400).json({ status: 'fail', message: err.message });
@@ -78,7 +86,8 @@ exports.updateEvent = async (req, res) => {
 
 exports.deleteEvent = async (req, res) => {
   try {
-    await Event.findByIdAndDelete(req.params.id);
+    const event = await Event.findByIdAndDelete(req.params.id);
+    if (!event) throw new Error('Event not found');
     res.status(204).json({ status: 'success', data: null });
   } catch (err) {
     res.status(400).json({ status: 'fail', message: err.message });
