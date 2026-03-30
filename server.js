@@ -19,7 +19,10 @@ const app = express();
 // CORS
 // CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: [
+    "https://otter-frontend-iota.vercel.app",
+    "http://localhost:5173"
+  ],
   credentials: true
 }));
 
